@@ -1,8 +1,10 @@
 -- ============================================================
 -- VETERANO TEAM | SINTONIA RP V2 + COLETOR DE ARMAS
--- Versao SEM LOGIN
 -- ============================================================
 
+local loginOK = true
+
+-- =================== MENU PRINCIPAL ===================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -52,6 +54,7 @@ local o = {
     pescaRunId=0, pescaStatus="Parado", pescaColetados=0,
     coletaRunId = 0,
     coletaHudRunId = 0,
+    coletorArmasRunId = 0,
 }
 
 local T = {
@@ -131,7 +134,9 @@ local function updateInstancePropertiesPosition(frame, handlePart, onEnd)
     end))
 end
 
+-- ============================================
 -- BYPASS ANTI-CHEAT
+-- ============================================
 (function()
     local RS = game:GetService("ReplicatedStorage")
     local isEValid = function(k) return (getgenv and getgenv()[k]) or (_G and _G[k]) end
@@ -362,7 +367,9 @@ end
     end))
 end)()
 
+-- ============================================
 -- MUNDO
+-- ============================================
 do
     local function capture()
         local L = game:GetService("Lighting")
@@ -448,7 +455,9 @@ do
     end))
 end
 
+-- ============================================
 -- AUTO CINTO
+-- ============================================
 do
     local acc = 0
     local function autoCinto()
@@ -475,7 +484,9 @@ do
     end))
 end
 
+-- ============================================
 -- HELPERS
+-- ============================================
 local function isCValid()
     local c = LocalPlayer.Character
     return c and c:FindFirstChildOfClass("Humanoid") or nil
@@ -624,7 +635,9 @@ local function uz()
     if diff > 0 then root.Velocity = root.Velocity + Vector3.new(0, diff, 0) end
 end
 
+-- ============================================
 -- NOCLIP / FLY
+-- ============================================
 local Oz = {"Head","Torso","Left Arm","Right Arm","Left Leg","Right Leg","HumanoidRootPart"}
 local Xz = {Head=true, Torso=true, ["Left Arm"]=false, ["Right Arm"]=false, ["Left Leg"]=false, ["Right Leg"]=false, HumanoidRootPart=false}
 local Bz = nil
@@ -729,7 +742,9 @@ local function xz(dt)
     root.AssemblyLinearVelocity = dir*step
 end
 
+-- ============================================
 -- VEICULO
+-- ============================================
 local function Dz(hum)
     if type(getconnections) ~= "function" then return nil end
     if type(debug) ~= "table" or type(debug.getupvalue) ~= "function" then return nil end
@@ -929,7 +944,9 @@ local function hz(hum)
     return true
 end
 
+-- ============================================
 -- LOOP PRINCIPAL
+-- ============================================
 o.state = T
 C.__VETERANO_SINTONIA_RUNTIME = o
 
@@ -976,7 +993,9 @@ end
 handleReady(LocalPlayer.CharacterAdded:Connect(vz))
 if LocalPlayer.Character then vz(LocalPlayer.Character) end
 
+-- ============================================
 -- STAFF DETECTION
+-- ============================================
 local Jz = {}
 do
     local CollectionService = game:GetService("CollectionService")
@@ -1118,7 +1137,9 @@ task.spawn(function()
     end
 end)
 
+-- ============================================
 -- ESP
+-- ============================================
 local wz = {medido=false, drawing=false, texto=false}
 function wz.set(obj, prop, val) return pcall(function() obj[prop]=val end) end
 function wz.medir()
@@ -1580,7 +1601,9 @@ handleReady(RunService.RenderStepped:Connect(function()
     end
 end))
 
+-- ============================================
 -- AIMBOT
+-- ============================================
 local SF = {
     Cabeca = {"Head"},
     Tronco = {"Torso","UpperTorso","LowerTorso","HumanoidRootPart"},
@@ -1661,7 +1684,9 @@ local function stopAimbot()
     end
 end
 
+-- ============================================
 -- PERFECT LOCKPICK
+-- ============================================
 local function bF()
     local pg = LocalPlayer:FindFirstChild("PlayerGui")
     if not pg then return nil end
@@ -1719,7 +1744,9 @@ handleReady(RunService.RenderStepped:Connect(function()
     xF(btn)
 end))
 
+-- ============================================
 -- COLETAR ITENS
+-- ============================================
 local ZF, DF, rF, hF, jF, WF = 20, 14, 1.5, D, 18, 65
 local function aF(obj)
     if obj:IsA("BasePart") then return obj end
@@ -1912,11 +1939,16 @@ do
     o.stopAutoColeta = stopAutoColeta
 end
 
+-- ============================================
 -- COLETOR DE ARMAS ESPECÍFICAS
+-- ============================================
 local ARMAS_PERMITIDAS = {
+    -- Facil
     "AK47", "FAL", "Fuzil", "Glock", "Oitão", "Submetralhadora", "USPs", "Uzi",
+    -- Media
     "Barret", "FuzilHollow", "FuzilPhantom", "FuzilTrovão", "G3", "PtDragon", "PtNeon", "PtNK",
-    "ArmaPDSecreta", "FuzilNinja", "FuzilPascoa", "Natalina", "PtNinja", "PtPascoa"
+    -- Limited
+    "ArmaPDSecreta", "FuzilNinja", "FuzilPascoa", "Natalina", "PtNinja", "PtPascoa",
 }
 
 local function armaPermitida(nome)
@@ -1928,99 +1960,71 @@ end
 
 local function encontrarArmas()
     local armasEncontradas = {}
-    local pastas = {"FarmPartesDeArma", "Armas", "ArmasDropadas", "DropadosInv", "Drops", "ItensDropados"}
+    local vistos = {}
+    local pastas = {"FarmPartesDeArma", "Armas", "ArmasDropadas", "DropadosInv", "Drops", "ItensDropados", "ItensNoChao", "ItemsDrop", "DropsInv"}
     for _, pastaNome in ipairs(pastas) do
         local pasta = workspace:FindFirstChild(pastaNome)
         if pasta then
             for _, item in ipairs(pasta:GetChildren()) do
-                if armaPermitida(item.Name) then table.insert(armasEncontradas, item) end
+                if armaPermitida(item.Name) and not vistos[item] then
+                    vistos[item] = true
+                    table.insert(armasEncontradas, item)
+                end
             end
         end
     end
     for _, item in ipairs(workspace:GetDescendants()) do
-        if item:IsA("Tool") and armaPermitida(item.Name) then
+        if not vistos[item] and (item:IsA("Tool") or item:IsA("Model")) and armaPermitida(item.Name) then
             local isOwned = false
             if LocalPlayer.Character and item:IsDescendantOf(LocalPlayer.Character) then isOwned = true end
             local backpack = LocalPlayer:FindFirstChild("Backpack")
             if backpack and item:IsDescendantOf(backpack) then isOwned = true end
-            if not isOwned then table.insert(armasEncontradas, item) end
+            if not isOwned then
+                vistos[item] = true
+                table.insert(armasEncontradas, item)
+            end
         end
     end
     return armasEncontradas
 end
 
-local function teleportarParaArma(arma)
-    local root = isUpdatePlayerGetMagnitudeCValid()
+local function voltarParaPosicao()
+    local character = LocalPlayer.Character
+    if not character then return false end
+    local root = character:FindFirstChild("HumanoidRootPart")
     if not root then return false end
-    local parte = arma
-    if arma:IsA("Model") then
-        parte = arma.PrimaryPart or arma:FindFirstChildWhichIsA("BasePart")
-    end
-    if not parte then return false end
-    root.CFrame = CFrame.new(parte.Position + Vector3.new(0, 3, 0))
+    root.CFrame = T.coletorArmasReturnPos
     root.AssemblyLinearVelocity = Vector3.zero
-    task.wait(0.5)
+    root.AssemblyAngularVelocity = Vector3.zero
     return true
 end
 
-local function pegarArma(arma)
-    local prompt = arma:FindFirstChildOfClass("ProximityPrompt")
-    if not prompt then prompt = arma:FindFirstChildWhichIsA("ProximityPrompt", true) end
-    if prompt and prompt.Enabled then
-        if type(fireproximityprompt) == "function" then
-            pcall(fireproximityprompt, prompt, 0)
-        else
-            pcall(function()
-                prompt:InputHoldBegin()
-                task.wait(math.max(0.15, prompt.HoldDuration+0.1))
-                prompt:InputHoldEnd()
-            end)
-        end
-        return true
-    end
-    if arma:IsA("Tool") then
-        local character = LocalPlayer.Character
-        if character then
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                arma.Parent = LocalPlayer.Backpack
-                return true
-            end
-        end
-    end
-    return false
-end
+o.voltarParaPosicao = voltarParaPosicao
 
-local function voltarParaPosicao()
-    task.wait(1)
-    local character = LocalPlayer.Character
-    if character then
-        local root = character:FindFirstChild("HumanoidRootPart")
-        if root then
-            root.CFrame = T.coletorArmasReturnPos
-            root.AssemblyLinearVelocity = Vector3.zero
-            root.AssemblyAngularVelocity = Vector3.zero
-            return true
-        end
-    end
-    return false
-end
-
-local function coletarArmasEspecificas()
+o.coletarArmasEspecificas = function()
+    if T.coletorArmasAtivo then return 0 end
     T.coletorArmasAtivo = true
-    local armas = encontrarArmas()
+    o.coletorArmasRunId = o.coletorArmasRunId + 1
+    local runId = o.coletorArmasRunId
     local coletadas = 0
-    if #armas == 0 then T.coletorArmasAtivo = false; return 0 end
+    local armas = encontrarArmas()
+    if #armas == 0 then
+        T.coletorArmasAtivo = false
+        return 0
+    end
     local hadNoclip = T.noclipEnabled
+    local hadFly = T.flyEnabled
+    if hadFly then T.flyEnabled = false; pcall(xz) end
     if not hadNoclip then T.noclipEnabled = true; pcall(Nz) end
     for _, arma in ipairs(armas) do
-        if o.destroyed then break end
+        if o.destroyed or runId ~= o.coletorArmasRunId then break end
         if arma and arma.Parent then
-            if teleportarParaArma(arma) then
-                if pegarArma(arma) then
-                    coletadas = coletadas + 1
-                    task.wait(0.5)
-                end
+            local parte = aF(arma)
+            if parte and parte.Parent then
+                local alvo = {item=arma, parte=parte}
+                pcall(GF, alvo)
+                coletadas = coletadas + 1
+                task.wait(0.35)
             end
         end
     end
@@ -2030,9 +2034,9 @@ local function coletarArmasEspecificas()
     return coletadas
 end
 
-o.coletarArmasEspecificas = coletarArmasEspecificas
-
+-- ============================================
 -- AUTO FARM PARTES DE ARMA
+-- ============================================
 do
     local function tF()
         local folder = workspace:FindFirstChild("FarmPartesDeArma")
@@ -2100,7 +2104,9 @@ do
     o.pararFarmPartes = KF
 end
 
+-- ============================================
 -- WEAPONS + TRACER COR
+-- ============================================
 do
     local tracerColors = {
         {"Ciano", Color3.fromRGB(0,255,255)},
@@ -2158,7 +2164,9 @@ do
     end))
 end
 
+-- ============================================
 -- GACHA 2%
+-- ============================================
 do
     local RS = game:GetService("ReplicatedStorage")
     local CHANCE_MINIMA = 0.02
@@ -2271,7 +2279,9 @@ do
     end))
 end
 
+-- ============================================
 -- AUTO FARM PESCA
+-- ============================================
 do
     local PESCA_TP = Vector3.new(-1165, -33, -5055)
     local function getCharacter()
@@ -2329,7 +2339,9 @@ do
     o.startPesca = setFarmEnabled
 end
 
+-- ============================================
 -- DURABILIDADE HUD
+-- ============================================
 do
     local MAX = 1500
     local green = Color3.fromRGB(70,190,120)
@@ -2510,7 +2522,9 @@ do
     end
 end
 
+-- ============================================
 -- AUTO FARM LIXEIRO
+-- ============================================
 do
     local P2 = 10
     local function getTeam() return LocalPlayer.Team and LocalPlayer.Team.Name or nil end
@@ -2817,7 +2831,9 @@ do
     o.startLixeiro = startLixeiro
 end
 
+-- ============================================
 -- ACOES RAPIDAS
+-- ============================================
 local function curar()
     local hum = isCValid()
     if hum then hum.Health = hum.MaxHealth end
@@ -2848,7 +2864,9 @@ local function encherMunicao()
     end
 end
 
--- HUD ITENS NO CHAO
+-- ============================================
+-- HUD FLUTUANTE: ITENS NO CHÃO
+-- ============================================
 do
     local hudGui = Instance.new("ScreenGui")
     hudGui.Name = "VeteranoColetaHUD"
@@ -2884,7 +2902,7 @@ do
     title.Position = UDim2.fromOffset(14, 0)
     title.Size = UDim2.new(1, -90, 1, 0)
     title.Font = Enum.Font.GothamBold
-    title.Text = "Itens no chao"
+    title.Text = "Itens no chão"
     title.TextColor3 = WH
     title.TextSize = 13
     title.TextXAlignment = Enum.TextXAlignment.Left
@@ -3032,7 +3050,9 @@ do
         local drops = o.listDrops and o.listDrops() or {}
         local maxShow = math.min(#drops, 20)
         for _, ch in ipairs(list:GetChildren()) do
-            if ch:IsA("GuiObject") and ch.Name ~= "EmptyMsg" then ch:Destroy() end
+            if ch:IsA("GuiObject") and ch.Name ~= "EmptyMsg" then
+                ch:Destroy()
+            end
         end
         if maxShow == 0 then
             emptyMsg.Visible = true
@@ -3040,7 +3060,9 @@ do
             return
         end
         emptyMsg.Visible = false
-        for i = 1, maxShow do buildRow(i, drops[i]) end
+        for i = 1, maxShow do
+            buildRow(i, drops[i])
+        end
         countLbl.Text = tostring(#drops)
     end
 
@@ -3057,7 +3079,9 @@ do
     end)
 end
 
--- STAFF MONITOR HUD
+-- ============================================
+-- STAFF MONITOR
+-- ============================================
 do
     local hudGui = Instance.new("ScreenGui")
     hudGui.Name = "VeteranoStaffHUD"
@@ -3104,7 +3128,9 @@ do
     end)
 end
 
+-- ============================================
 -- UI PRINCIPAL
+-- ============================================
 local W = isMobile and 440 or 640
 local H = isMobile and 500 or 580
 
@@ -3652,23 +3678,28 @@ local updateContent = function()
             criarSlider("Forca Jump", 50, 150, function() return T.spoofJumpPower end, function(v) T.spoofJumpPower = v end, 1)
             criarSep("MOVIMENTO")
             criarToggle("Noclip", function() return T.noclipEnabled end, function(v)
-                T.noclipEnabled = v; pcall(Nz)
+                T.noclipEnabled = v
+                pcall(Nz)
             end)
             criarToggle("Fly", function() return T.flyEnabled end, function(v)
-                T.flyEnabled = v; pcall(xz)
+                T.flyEnabled = v
+                pcall(xz)
             end)
             criarSlider("Vel. Fly", 16, 250, function() return T.flySpeed end, function(v) T.flySpeed = v end, 1)
             criarSep("MUNDO")
             criarToggle("Sempre Dia", function() return T.alwaysDay end, function(v)
-                T.alwaysDay = v; pcall(o.applyWorld)
+                T.alwaysDay = v
+                pcall(o.applyWorld)
             end)
             criarToggle("Fullbright", function() return T.fullbright end, function(v)
-                T.fullbright = v; pcall(o.applyWorld)
+                T.fullbright = v
+                pcall(o.applyWorld)
             end)
             criarToggle("No Lag", function() return T.noLag end, function(v)
-                T.noLag = v; pcall(o.applyWorld)
+                T.noLag = v
+                pcall(o.applyWorld)
             end)
-            rTextLbl.Text = "PLAYER - Jogador\n\nWalkSpeed:\n  Aumenta a velocidade.\n  Limite = 28.\n\nJumpPower:\n  Forca do pulo.\n\nNoclip:\n  Atravessa paredes.\n\nFly:\n  Voa com WASD.\n  Space = subir\n  Ctrl = descer\n\nSempre Dia / Fullbright / No Lag."
+            rTextLbl.Text = "PLAYER - Jogador\n\nWalkSpeed:\n  Aumenta a velocidade de corrida.\n  O servidor limita em 28 pra nao dar kick.\n\nJumpPower:\n  Aumenta a forca do pulo. Padrao = 50.\n\nNoclip:\n  Atravessa paredes. Use com cuidado.\n\nFly:\n  Voa com WASD.\n  Space = subir | Ctrl = descer\n\nSempre Dia:\n  Trava o horario em meio-dia.\n\nFullbright:\n  Mundo claro sem sombras e nevoa.\n\nNo Lag:\n  Desliga sombras/blur/sunrays pra ganhar FPS."
 
         elseif activeTab == "ESP" then
             rTitle.Text = "ESP"
@@ -3688,7 +3719,7 @@ local updateContent = function()
             criarToggle("Seta fora da tela", function() return T.arrow end, function(v) T.arrow = v end)
             criarToggle("Times", function() return T.teamTag end, function(v) T.teamTag = v end)
             criarSlider("Distancia maxima", 100, 5000, function() return T.maxDistance end, function(v) T.maxDistance = v end, 50)
-            rTextLbl.Text = "ESP - Ver Jogadores\n\nStaff = VERMELHO\nAmigos = AZUL\nNormais = ROXO"
+            rTextLbl.Text = "ESP - Ver Jogadores\n\nCaixa 2D:\n  Retangulo em volta do jogador.\n\nCaixa 3D:\n  Arestas 3D da caixa.\n\nNome:\n  Nome do jogador.\n\nDistancia:\n  Metros de distancia ate voce.\n\nItem na mao:\n  Nome da arma/item equipada.\n\nEsqueleto:\n  Linhas do corpo (ossos).\n\nHighlight:\n  Marca o jogador com cor solida.\n\nTracer:\n  Linha da sua tela ate o alvo.\n\nSeta fora da tela:\n  Seta quando ele sai da tela.\n\nTimes:\n  Mostra o time do jogador.\n\nCores:\n  Staff = VERMELHO\n  Amigos = AZUL\n  Normais = ROXO"
 
         elseif activeTab == "AIMBOT" then
             rTitle.Text = "AIMBOT"
@@ -3697,17 +3728,21 @@ local updateContent = function()
                 if v then aimbotLoop() else stopAimbot() end
             end)
             criarSep("MODO")
-            criarDropdown("Modo", {"Legit", "Rage"}, T.aimbotMode, function(v) T.aimbotMode = v end)
+            criarDropdown("Modo", {"Legit", "Rage"}, T.aimbotMode, function(v)
+                T.aimbotMode = v
+            end)
             criarSep("MIRA")
             criarSlider("FOV", 10, 600, function() return T.aimbotFov end, function(v) T.aimbotFov = v end, 5)
             criarSlider("Distancia", 50, 1000, function() return T.aimbotDistance end, function(v) T.aimbotDistance = v end, 10)
             criarSlider("Suavidade", 1, 100, function() return math.floor(T.aimbotSmoothness*100) end, function(v) T.aimbotSmoothness = v/100 end, 1)
-            criarDropdown("Parte corpo", {"Cabeca", "Torso"}, T.aimbotBodyPart, function(v) T.aimbotBodyPart = v end)
+            criarDropdown("Parte corpo", {"Cabeca", "Torso"}, T.aimbotBodyPart, function(v)
+                T.aimbotBodyPart = v
+            end)
             criarSep("FILTROS")
             criarToggle("Wall Check", function() return T.aimbotWallCheck end, function(v) T.aimbotWallCheck = v end)
             criarToggle("Friend Check", function() return T.friendCheck end, function(v) T.friendCheck = v end)
             criarToggle("Staff Check", function() return T.adminCheck end, function(v) T.adminCheck = v end)
-            rTextLbl.Text = "AIMBOT - Mira\n\nLegit: so mira com arma\nRage: mira sempre"
+            rTextLbl.Text = "AIMBOT - Mira Automatica\n\nModo Legit:\n  So mira quando voce tem arma equipada.\n  Parece natural, dificil de detectar.\n\nModo Rage:\n  Mira SEMPRE, mesmo sem arma na mao.\n  Trava instantaneamente no alvo.\n\nFOV:\n  Distancia maxima do centro da tela.\n  Aumenta = pega alvos mais longe.\n\nSuavidade:\n  Menor = trava rapido.\n  Maior = movimento natural.\n\nParte do Corpo:\n  Cabeca = headshot\n  Torso = body shot\n\nWall Check:\n  So mira em quem tem linha de visao.\n\nFriend/Staff Check:\n  Ignora amigos/staff."
 
         elseif activeTab == "WEAPONS" then
             rTitle.Text = "WEAPONS"
@@ -3764,14 +3799,16 @@ local updateContent = function()
                             if s then s.Color = LINE; s.Thickness = 1 end
                         end
                     end
-                    bs.Color = TC; bs.Thickness = 2
+                    bs.Color = TC
+                    bs.Thickness = 2
+                    Xz("Cor do tracer: "..nome)
                 end
                 btn.MouseButton1Click:Connect(aplicar)
                 btn.TouchTap:Connect(aplicar)
             end
 
             criarSep("COLETAR ITENS")
-            criarToggle("Coleta Auto", function() return T.autoColetaEnabled end, function(v)
+            criarToggle("Ativar Coleta Auto", function() return T.autoColetaEnabled end, function(v)
                 if v then
                     if o.startAutoColeta then o.startAutoColeta() end
                 else
@@ -3780,48 +3817,53 @@ local updateContent = function()
             end)
             criarSlider("Velocidade TP", 20, 160, function() return T.itemTeleportSpeed end, function(v) T.itemTeleportSpeed = v end, 5)
             criarSlider("Cooldown (ms)", 10, 200, function() return math.floor(T.autoColetaCooldown * 100) end, function(v) T.autoColetaCooldown = v / 100 end, 5)
-            criarToggle("HUD de itens", function() return T.coletaHudEnabled end, function(v)
+            criarToggle("Mostrar HUD de itens", function() return T.coletaHudEnabled end, function(v)
                 T.coletaHudEnabled = v
                 if o.setColetaHudVisible then o.setColetaHudVisible(v) end
             end)
 
             criarSep("COLETOR DE ARMAS")
             criarToggle("Coletor Automatico", function() return T.coletorArmasAtivo end, function(v)
-                T.coletorArmasAtivo = v
                 if v then
                     task.spawn(function()
                         if o.coletarArmasEspecificas then o.coletarArmasEspecificas() end
-                        T.coletorArmasAtivo = false
                     end)
                 end
             end)
             criarBotao("Coletar Armas Agora", function()
                 task.spawn(function()
-                    if o.coletarArmasEspecificas then o.coletarArmasEspecificas() end
+                    local qtd = o.coletarArmasEspecificas and o.coletarArmasEspecificas() or 0
+                    if Xz then Xz(string.format("Coletadas %d armas.", qtd)) end
                 end)
             end)
             criarBotao("Mostrar Lista", function()
-                local lista = "Armas Permitidas:\n\nFacil:\n"
-                for _, arma in ipairs({"AK47", "FAL", "Fuzil", "Glock", "Oitão", "Submetralhadora", "USPs", "Uzi"}) do
-                    lista = lista .. "• " .. arma .. "\n"
+                local lista = "ARMAS PERMITIDAS:\n\nFacil:\n"
+                for _, arma in ipairs({"AK47","FAL","Fuzil","Glock","Oitão","Submetralhadora","USPs","Uzi"}) do
+                    lista = lista .. "  - " .. arma .. "\n"
                 end
                 lista = lista .. "\nMedia:\n"
-                for _, arma in ipairs({"Barret", "FuzilHollow", "FuzilPhantom", "FuzilTrovão", "G3", "PtDragon", "PtNeon", "PtNK"}) do
-                    lista = lista .. "• " .. arma .. "\n"
+                for _, arma in ipairs({"Barret","FuzilHollow","FuzilPhantom","FuzilTrovão","G3","PtDragon","PtNeon","PtNK"}) do
+                    lista = lista .. "  - " .. arma .. "\n"
                 end
                 lista = lista .. "\nLimited:\n"
-                for _, arma in ipairs({"ArmaPDSecreta", "FuzilNinja", "FuzilPascoa", "Natalina", "PtNinja", "PtPascoa"}) do
-                    lista = lista .. "• " .. arma .. "\n"
+                for _, arma in ipairs({"ArmaPDSecreta","FuzilNinja","FuzilPascoa","Natalina","PtNinja","PtPascoa"}) do
+                    lista = lista .. "  - " .. arma .. "\n"
                 end
                 rTextLbl.Text = lista
             end)
-            criarBotao("Voltar Posicao", function() voltarParaPosicao() end)
-            rTextLbl.Text = "WEAPONS\n\nTracer: cor da bala\nColeta Auto: TP pro item\nColetor Armas: pega especificas\nVoltar: (-227, 38, 144)"
+            criarBotao("Voltar para Posicao", function()
+                if o.voltarParaPosicao then
+                    o.voltarParaPosicao()
+                    if Xz then Xz("Voltou para (-227, 38, 144)") end
+                end
+            end)
+
+            rTextLbl.Text = "WEAPONS - Armas\n\nTracer Neon:\n  Deixa o rastro da bala brilhante.\n  Escolha a cor na grade.\n\nColetar Itens Auto:\n  Teleporta pro item dropado mais proximo.\n\nCOLETOR DE ARMAS:\n  Pega APENAS as armas da lista:\n  Facil / Media / Limited\n\n  Apos pegar todas, volta\n  pra posicao (-227, 38, 144)."
 
         elseif activeTab == "MISC" then
             rTitle.Text = "MISC"
             criarToggle("Perfect Lockpick", function() return T.perfectLockpick end, function(v) T.perfectLockpick = v end)
-            criarToggle("2x Sorte (Gacha)", function() return T.sorte2xEnabled end, function(v)
+            criarToggle("2x Sorte (Gacha 2%)", function() return T.sorte2xEnabled end, function(v)
                 T.sorte2xEnabled = v
                 if v then
                     if o.aplicarGacha then pcall(o.aplicarGacha) end
@@ -3830,7 +3872,7 @@ local updateContent = function()
                 end
             end)
             criarSep("AUTO FARM")
-            criarToggle("Farm Partes Arma", function() return T.farmPartesEnabled end, function(v)
+            criarToggle("Auto Farm Partes de Arma", function() return T.farmPartesEnabled end, function(v)
                 if v and T.flyEnabled then T.flyEnabled = false; pcall(xz) end
                 T.farmPartesEnabled = v
                 if not v then
@@ -3838,21 +3880,22 @@ local updateContent = function()
                     return
                 end
                 task.spawn(function()
-                    if o.iniciarFarmPartes then o.iniciarFarmPartes() end
+                    local count = o.iniciarFarmPartes and o.iniciarFarmPartes() or 0
+                    Xz(string.format("Farm Partes encerrado. Pecas: %d", count))
                 end)
             end)
-            criarToggle("Farm Lixeiro", function() return T.autoFarmLixeiroEnabled end, function(v)
+            criarToggle("Auto Farm Lixeiro", function() return T.autoFarmLixeiroEnabled end, function(v)
                 if o.startLixeiro then o.startLixeiro(v) end
             end)
-            criarSlider("Lixos/entrega", 1, 20, function() return T.autoFarmLixeiroQuantidade end, function(v) T.autoFarmLixeiroQuantidade = v end, 1)
-            criarToggle("Farm Pesca", function() return T.autoFarmPescaEnabled end, function(v)
+            criarSlider("Lixos por entrega", 1, 20, function() return T.autoFarmLixeiroQuantidade end, function(v) T.autoFarmLixeiroQuantidade = v end, 1)
+            criarToggle("Auto Farm Pesca", function() return T.autoFarmPescaEnabled end, function(v)
                 if o.startPesca then o.startPesca(v) end
             end)
             criarSep("ACOES")
             criarBotao("Curar", curar)
             criarBotao("Destravar Portas", destravar)
             criarBotao("Encher Municao", encherMunicao)
-            rTextLbl.Text = "MISC\n\nPerfect Lockpick\nGacha 2x\nFarm Partes/Lixeiro/Pesca\nAcoes rapidas"
+            rTextLbl.Text = "MISC - Diversos\n\nPerfect Lockpick:\n  Sempre acerta a posicao correta.\n\n2x Sorte (Gacha):\n  Aumenta chances de itens raros.\n\nAuto Farm Partes de Arma:\n  Teleporta automaticamente para\n  as pecas de arma espalhadas no mapa.\n\nAuto Farm Lixeiro:\n  Pega lixo e entrega automaticamente.\n\nAuto Farm Pesca:\n  Teleporta pra area e pega tudo.\n\nAcoes Rapidas:\n  Curar = enche vida\n  Destravar = abre portas\n  Municao = 999 balas"
 
         elseif activeTab == "VEICULO" then
             rTitle.Text = "VEICULO"
@@ -3860,13 +3903,15 @@ local updateContent = function()
                 T.durabilidadeHudEnabled = v
                 if v then pcall(o.ativarDurabilidade) else pcall(o.desativarDurabilidade) end
             end)
-            criarToggle("Cinto Auto", function() return T.autoCintoEnabled end, function(v) T.autoCintoEnabled = v end)
+            criarToggle("Cinto Automatico", function() return T.autoCintoEnabled end, function(v) T.autoCintoEnabled = v end)
             criarSep("MOVIMENTO")
             criarToggle("Noclip Car", function() return T.noclipCarEnabled end, function(v)
-                T.noclipCarEnabled = v; pcall(o.aplicarNoclipCar)
+                T.noclipCarEnabled = v
+                pcall(o.aplicarNoclipCar)
             end)
             criarToggle("VFly", function() return T.vFlyEnabled end, function(v)
-                T.vFlyEnabled = v; pcall(o.aplicarNoclipCar)
+                T.vFlyEnabled = v
+                pcall(o.aplicarNoclipCar)
             end)
             criarSlider("VFly Horiz", 20, 500, function() return T.vFlyHorizontalSpeed end, function(v) T.vFlyHorizontalSpeed = v end, 5)
             criarSlider("VFly Vert", 10, 300, function() return T.vFlyVerticalSpeed end, function(v) T.vFlyVerticalSpeed = v end, 5)
@@ -3877,7 +3922,7 @@ local updateContent = function()
                     if hum then hz(hum) end
                 end)
             end, 100)
-            rTextLbl.Text = "VEICULO\n\nDurabilidade HUD\nCinto Auto\nNoclip Car\nVFly (Space/Ctrl)\nBoost motor"
+            rTextLbl.Text = "VEICULO - Carros\n\nDurabilidade HUD:\n  Mostra a vida do carro.\n\nCinto Automatico:\n  Coloca cinto sozinho ao entrar.\n\nNoclip Car:\n  Atravessa paredes com o carro.\n\nVFly:\n  Voa com o carro.\n  W/S = mover | A/D = virar\n  Space = subir | Ctrl = descer\n\nBoost:\n  Aumenta aceleracao do motor.\n  100% = stock, 200% = 2x mais."
 
         elseif activeTab == "GARAGEM" then
             rTitle.Text = "GARAGEM"
@@ -3885,7 +3930,7 @@ local updateContent = function()
             local infoLbl = Instance.new("TextLabel")
             infoLbl.Size = UDim2.new(1, 0, 0, isMobile and 200 or 180)
             infoLbl.BackgroundColor3 = BG3
-            infoLbl.Text = "Em breve:\n  ESP Car\n  Spawn de veiculos\n  Controle remoto"
+            infoLbl.Text = "Essa aba sera usada para puxar veiculos do jogo.\n\nEm breve:\n  ESP Car\n  Spawn de veiculos\n  Controle remoto"
             infoLbl.TextColor3 = DIM
             infoLbl.Font = Enum.Font.Gotham
             infoLbl.TextSize = isMobile and 10 or 11
@@ -3894,19 +3939,21 @@ local updateContent = function()
             infoLbl.Parent = leftPanel
             local infoCorner = Instance.new("UICorner"); infoCorner.CornerRadius = UDim.new(0,8); infoCorner.Parent = infoLbl
             local infoPad = Instance.new("UIPadding")
-            infoPad.PaddingTop = UDim.new(0,6); infoPad.PaddingLeft = UDim.new(0,8)
-            infoPad.PaddingRight = UDim.new(0,8); infoPad.PaddingBottom = UDim.new(0,6)
+            infoPad.PaddingTop = UDim.new(0,6)
+            infoPad.PaddingLeft = UDim.new(0,8)
+            infoPad.PaddingRight = UDim.new(0,8)
+            infoPad.PaddingBottom = UDim.new(0,6)
             infoPad.Parent = infoLbl
             local infoStroke = Instance.new("UIStroke"); infoStroke.Color = TC; infoStroke.Thickness = 1; infoStroke.Transparency = 0.5; infoStroke.Parent = infoLbl
-            rTextLbl.Text = "GARAGEM\n\nEm breve"
+            rTextLbl.Text = "GARAGEM - Veiculos\n\nEssa aba sera usada pra puxar\nveiculos do jogo.\n\nEm breve:\n  ESP Car (ver carros no mapa)\n  Spawn de veiculos\n  Controle remoto"
 
         elseif activeTab == "CONFIG" then
             rTitle.Text = "CONFIG"
-            criarSep("SOBRE")
+            criarSep("SOBRE A VETERANO TEAM")
             local infoLbl = Instance.new("TextLabel")
-            infoLbl.Size = UDim2.new(1, 0, 0, isMobile and 150 or 130)
+            infoLbl.Size = UDim2.new(1, 0, 0, isMobile and 210 or 190)
             infoLbl.BackgroundColor3 = BG3
-            infoLbl.Text = "VETERANO TEAM\n\nDiscord: @veterano.dev\nTikTok: @veterano.dev\nYouTube: @veterano_dev"
+            infoLbl.Text = "VETERANO TEAM\n\nUma equipe especializada em desenvolvimento de cheats para jogos de RP na plataforma Roblox.\n\nNossos projetos sao focados em:\n  - Sistemas de bypass avancados\n  - Menus personalizados\n  - Automacoes inteligentes\n  - Otimizacao de performance\n\nTambem desenvolvemos scripts sob encomenda para outras equipes, com sistemas de login, HWID e protecao anti-vazamento.\n\nDiscord: @veterano.dev"
             infoLbl.TextColor3 = DIM
             infoLbl.Font = Enum.Font.Gotham
             infoLbl.TextSize = isMobile and 9 or 10
@@ -3921,7 +3968,10 @@ local updateContent = function()
             local infoStroke = Instance.new("UIStroke"); infoStroke.Color = TC; infoStroke.Thickness = 1; infoStroke.Transparency = 0.5; infoStroke.Parent = infoLbl
 
             criarSep("MONITORAR STAFF")
-            criarToggle("Monitor Staff", function() return T.monitorarStaff end, function(v) T.monitorarStaff = v end)
+            criarToggle("Ativar Monitor Staff", function() return T.monitorarStaff end, function(v)
+                T.monitorarStaff = v
+                if v then Xz("Monitor Staff ATIVADO") else Xz("Monitor Staff desativado") end
+            end)
 
             criarSep("GERENCIAR")
             criarBotao("Resetar Menu", function()
@@ -3940,7 +3990,9 @@ local updateContent = function()
                 T.aimbotMode = "Legit"
                 T.aimbotBodyPart = "Cabeca"
                 T.armaTracerCor = "Ciano"
-                pcall(o.applyWorld); pcall(Nz); pcall(xz)
+                pcall(o.applyWorld)
+                pcall(Nz)
+                pcall(xz)
                 stopAimbot()
                 if o.restaurarArmas then pcall(o.restaurarArmas) end
                 if o.desativarDurabilidade then pcall(o.desativarDurabilidade) end
@@ -3949,13 +4001,20 @@ local updateContent = function()
                 if o.stopAutoColeta then pcall(o.stopAutoColeta) end
                 if o.setColetaHudVisible then pcall(o.setColetaHudVisible, false) end
                 if o.pararFarmPartes then pcall(o.pararFarmPartes) end
+                Xz("Menu resetado.")
                 updateContent()
             end)
-            criarBotao("Rejoin Servidor", function()
-                pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
+            criarBotao("Rejoin (Servidor)", function()
+                pcall(function()
+                    TeleportService:Teleport(game.PlaceId, LocalPlayer)
+                end)
+                Xz("Rejoinando...")
             end)
-            criarBotao("Rejoin Place", function()
-                pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer) end)
+            criarBotao("Rejoin (Place)", function()
+                pcall(function()
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+                end)
+                Xz("Rejoinando ao place...")
             end)
             criarBotao("Fechar Menu", function() screenGui.Enabled = false end)
 
@@ -3963,7 +4022,7 @@ local updateContent = function()
             local infoLbl2 = Instance.new("TextLabel")
             infoLbl2.Size = UDim2.new(1, 0, 0, isMobile and 70 or 60)
             infoLbl2.BackgroundColor3 = BG3
-            infoLbl2.Text = "Build: vt-team-v5\nTecla menu: K\nFly: F | Noclip: N"
+            infoLbl2.Text = "Build: vt-team-v5\nTecla do menu: K\nFly: F | Noclip: N"
             infoLbl2.TextColor3 = DIM
             infoLbl2.Font = Enum.Font.Gotham
             infoLbl2.TextSize = isMobile and 9 or 10
@@ -3977,7 +4036,7 @@ local updateContent = function()
             ip2.Parent = infoLbl2
             local is2 = Instance.new("UIStroke"); is2.Color = TC; is2.Thickness = 1; is2.Transparency = 0.5; is2.Parent = infoLbl2
 
-            rTextLbl.Text = "CONFIG\n\nMonitor Staff\nReset\nRejoin\nAtalhos: K/F/N"
+            rTextLbl.Text = "CONFIG - Configuracoes\n\nMonitor Staff:\n  Mostra quantos staffs online.\n\nResetar Menu:\n  Desliga tudo e volta ao padrao.\n\nRejoin (Servidor):\n  Entra em outro servidor.\n\nRejoin (Place):\n  Entra no MESMO servidor.\n\nFechar Menu:\n  Esconde o menu.\n\nAtalhos:\n  K = abrir/fechar menu\n  F = ativar fly\n  N = ativar noclip"
         end
     end)
 end
@@ -4068,6 +4127,27 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
+function Xz(msg)
+    local toast = Instance.new("TextLabel")
+    toast.Size = UDim2.new(0, 260, 0, 30)
+    toast.Position = UDim2.new(0.5, -130, 1, -50)
+    toast.BackgroundColor3 = BG3
+    toast.TextColor3 = TC
+    toast.Font = Enum.Font.GothamBold
+    toast.TextSize = 11
+    toast.Text = tostring(msg)
+    toast.BorderSizePixel = 0
+    toast.ZIndex = 999
+    toast.Parent = container
+    local tc = Instance.new("UICorner"); tc.CornerRadius = UDim.new(0,8); tc.Parent = toast
+    local ts = Instance.new("UIStroke"); ts.Color = TC; ts.Thickness = 1; ts.Parent = toast
+    task.delay(4, function()
+        TweenService:Create(toast, TweenInfo.new(0.3), {BackgroundTransparency=1, TextTransparency=1}):Play()
+        task.wait(0.4)
+        toast:Destroy()
+    end)
+end
+
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == T.menuKeybind then
@@ -4108,4 +4188,4 @@ C.__VETERANO_SINTONIA_CLEANUP = function()
     end)
 end
 
-print("[VETERANO TEAM | SINTONIA RP V2] Carregado (v5) SEM LOGIN + Coletor de Armas")
+print("[VETERANO TEAM | SINTONIA RP V2] Carregado (v5) + Coletor de Armas")
